@@ -2,6 +2,7 @@
  * Client side vector search using EmbeddingGemma via LiteRT.js,
  * Tokenizer via Transformers.js, and pre/post processing via 
  * TensorFlow.js - all accelerated via WebGPU for speed.
+ * Version: 1.0.0
  * Coded by Jason Mayes 2026. 
  *--------------------------------------------------------------------
  * Connect with me on social if aquestions or comments:
