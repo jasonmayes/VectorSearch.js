@@ -4,13 +4,13 @@
  */
 export class VisualizeEmbedding {
   /**
-   * Renders the given tensor as a heatmap and its full vector text.
-   * @param {tf.Tensor} tensor The embedding tensor to visualize.
+   * Renders the given data as a heatmap and its full vector text.
+   * @param {tf.Tensor|Array} data The embedding data to visualize.
    * @param {HTMLElement} vizEl The DOM element to render the heatmap into.
    * @param {HTMLElement} textEl The DOM element to render the full vector text into.
    */
-  async render(tensor, vizEl, textEl) {
-    const DATA = await tensor.data();
+  async render(data, vizEl, textEl) {
+    const DATA = (data instanceof tf.Tensor) ? await data.data() : data;
     
     // Render grid viz (all dimensions).
     vizEl.innerHTML = '';
