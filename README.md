@@ -20,7 +20,7 @@ Please note that currently script.js in the dmeo/js folder imports the latest ve
 Please also see below for things you need to host yourself to run on your own server.
 
 
-## Things to be aware of before using
+## Things to be aware of before hosting and running yourself
 
 This project depends on a few things that need to be setup to work.
 
