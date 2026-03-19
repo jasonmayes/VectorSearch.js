@@ -4,9 +4,11 @@
   "description": "Client side Vector Search",
   "main": "index.html",
   "scripts": {
-    "build": "npx esbuild ./src/VectorSearch.js --bundle --minify --format=esm --outfile=./VectorSearch-min.js --external:https://* --external:http://*"
+    "build": "npx esbuild ./src/VectorSearch.js --bundle --minify --format=esm --outfile=./VectorSearch-min.js --external:https://* --external:http://*",
+    "demo": "npx http-server demo --cors -c-1"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "http-server": "^14.1.1"
   }
 }
