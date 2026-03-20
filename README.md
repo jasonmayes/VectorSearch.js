@@ -1,6 +1,8 @@
 # VectorSearch.js
 A library to perform vector search entirely client side in the web browser using Google's EmbeddingGemma model via Web AI libraries with WebGPU acceleration for speed. The library also supports visualizing tokens of text, and the text embeddings if you desire. Here is an example of it in action:
 
+![Screenshot of VectorSearch.js in action](https://github.com/jasonmayes/VectorSearch.js/blob/main/demo/demo.jpg?raw=true)
+
 ###Got questions? 
 [Reach out to me over on LinkedIn]((https://www.linkedin.com/in/webai)) or follow for updates on related client side Web AI projects.
 
@@ -8,6 +10,11 @@ A library to perform vector search entirely client side in the web browser using
 ## Show me a demo that works already
 
 Sure [check out my Codepen demo here](https://codepen.io/jasonmayes/pen/JoKMBmq)!
+
+
+## Performance
+
+I tried to make this as fast as I could. I have tested with 100K vectors on my very old NVIDIA 1070 GPU and it can search those in tens of miliseconds. Currently it is designed to preload the IndexDB vector DB I wrote into GPU memory to perform as fast as possible when calculating cosine similarity for your target text across all stored vectors. So that means it currently takes the same time roughly for 100K vectors vs 1K vectors. I have not yet found the upper bound but there is obviously a limit here depending on your GPU VRAM size etc. I will later need to refactor to load in chunks to avoid any issues for larger vector stores on client side.
 
 
 ## Building and serving yourself
