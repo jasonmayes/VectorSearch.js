@@ -1,5 +1,5 @@
 # VectorSearch.js
-A library to perform vector search entirely client side in the web browser using Google's EmbeddingGemma model via Web AI libraries with WebGPU acceleration for speed. The library also supports visualizing tokens of text, and the text embeddings if you desire. Here is an example of it in action:
+A library to perform vector search entirely client side in the web browser (custom Vector DB writtien on top of IndexDB) using Google's EmbeddingGemma model via Web AI libraries with WebGPU acceleration for speed. The library also supports visualizing tokens of text, and the text embeddings if you desire. Here is an example of it in action:
 
 ![Screenshot of VectorSearch.js in action](https://github.com/jasonmayes/VectorSearch.js/blob/main/demo/demo.jpg?raw=true)
 
