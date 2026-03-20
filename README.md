@@ -14,8 +14,11 @@ Sure [check out my Codepen demo here](https://codepen.io/jasonmayes/pen/JoKMBmq)
 
 ## Performance
 
-I tried to make this as fast as I could. I have tested with 100K vectors on my very old NVIDIA 1070 GPU and it can search those in tens of miliseconds. Currently it is designed to preload the IndexDB vector DB I wrote into GPU memory to perform as fast as possible when calculating cosine similarity for your target text across all stored vectors. So that means it currently takes the same time roughly for 100K vectors vs 1K vectors. I have not yet found the upper bound but there is obviously a limit here depending on your GPU VRAM size etc. I will later need to refactor to load in chunks to avoid any issues for larger vector stores on client side.
+I [tried to make this as fast as I could](https://www.linkedin.com/posts/webai_rag-litertjs-embeddinggemma-activity-7423026459201523712-IWiD?utm_source=share&utm_medium=member_desktop&rcm=ACoAAE29dSoB2Q5rqrgken9VCQgyG_zQ-gVgvG8). I have tested with 100K vectors on my very old NVIDIA 1070 GPU and it can search those in tens of miliseconds. The largest cost is actually the embedding that takes around 300ms using the EmbeddingGemma model (high quality but large). You may want to swap this out for a leaner embedding model (e.g. all-MiniLM-L6-v2 that Transformers.js also supports) for the ultimate client side speed for embedding - if enough demand I can add support for that too - just open a bug.
 
+Currently it is designed to preload the IndexDB vector DB I wrote (yes even the vector DB is client side) into GPU memory to perform as fast as possible when calculating cosine similarity for your target text across all stored vectors. So that means the first search you perform will be slower as it has to transfer memory from CPU to GPU for the first time (suggest doing a dummy vector search on page load to warm up). This also means that it currently takes roughly the SAME time for 100K vectors searched vs 1K vectors due to leveraging the GPU. I have not yet found the upper bound, but there is obviously a limit here, depending on your GPU type, VRAM size etc. I will later need to refactor to load in chunks to avoid any issues for larger vector stores on client side.
+
+I have verified this works on Intel integrated GPUs, NVIDIA, AMD, and Apple M GPUs in any web browser that supports WebGPU (most of them do now).
 
 ## Building and serving yourself
 
