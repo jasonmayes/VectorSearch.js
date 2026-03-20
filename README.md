@@ -11,7 +11,7 @@
 
 Sure [check out my Codepen demo here](https://codepen.io/jasonmayes/pen/JoKMBmq)!
 
-Here's a screen sh ot it in action:
+Here's a screen shot of it in action:
 
 ![Screenshot of VectorSearch.js in action](https://github.com/jasonmayes/VectorSearch.js/blob/main/demo/demo.jpg?raw=true)
 
