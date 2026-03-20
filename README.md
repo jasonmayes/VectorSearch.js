@@ -22,21 +22,57 @@ Here's a screen sh ot it in action:
 ## Usage
 
 ```javascript
+import { VectorSearch } from 'https://cdn.jsdelivr.net/gh/jasonmayes/VectorSearch.js@main/VectorSearch-min.js';
+
 // Configuration.
 const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite';  // Location of hosted EmbeddingGemma TFLite file.
 const TOKENIZER_ID = 'onnx-community/embeddinggemma-300m-ONNX';  // Transformers.js Tokenizer to use.
 const SEQ_LENGTH = 1024; // EmbeddingGemma version sequence length.
-// Instantiate VectorSearch Master Class.
-const VECTOR_SEARCH = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+let vectorSearch = undefined;
 
-// Store text in client side VectorDB
-async function store(someArrayOfStrings) {
-  await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData');
+// Initiation and usage example.
+async function init(statusDomElement) {
+  vectorSearch = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+  await vectorSearch.load('wasm/', statusDomElement); // Location of hosted LiteRT.js Wasm runtime files (see demo).
+
+  await store(['I love Web AI', 'I like cats', 'Dogs are cool too', 'AI rocks', 'Birds can fly', 'Web AI is client side AI', 'Fish can swim', 'Robots are neat', 'JavaScript rocks too!', 'and so on']);
+  await find('Likes animals', 0.25);
 }
 
-// Store text in client side VectorDB with visual feedback of progress
-async function storeWithProgressUpdate(someArrayOfStrings) {
-  await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData', STATUS_EL);
+init();
+
+
+// How to store text in client side VectorDB
+async function store(someArrayOfStrings) {
+  await vectorSearch.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData');
+  // Optionally can specify callback to write status to a HTML DOM element:
+  // await vectorSearch.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData', STATUS_EL);
+}
+
+
+// Search example.
+async function find(queryText, cosineSimilarityThreshold) {
+  const {embedding: EMBEDDING_DATA, tokens: TOKENS} = await vectorSearch.getEmbedding(queryText);
+
+  /** Optional: Visualize embeddings and tokens for the search query text.
+  vectorSearch.renderTokens(TOKENS, SOME_DOM_ELEMENT);
+  await vectorSearch.renderEmbedding(EMBEDDING_DATA, SOME_DOM_ELEMENT_FOR_VISUAL, SOME_DOM_ELEMENT_FOR_TEXT);
+  **/
+
+  // Now actually search the vector database.
+  const {results: RESULTS, bestScore: BEST_SCORE, bestIndex: BEST_INDEX} = await vectorSearch.search(EMBEDDING_DATA, cosineSimilarityThreshold, 'DatabaseNameForThisData');
+
+  if (RESULTS.length > 0) {  
+    const BEST_MATCH_VECTOR = RESULTS[BEST_INDEX].vector;
+    const BEST_MATCH_SCORE = RESULTS[BEST_INDEX].score;
+    const BEST_MATCH_TEXT = RESULTS[BEST_INDEX].text;
+    if (BEST_MATCH_TEXT) {
+      console.log(BEST_MATCH_SCORE + ': ' + BEST_MATCH_TEXT);
+      // Logs: 0.7519992589950562: I like cats.
+    }
+  } else {
+    console.log('No matches found above threshold.');
+  }
 }
 ```
 
