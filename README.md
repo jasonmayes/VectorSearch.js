@@ -23,11 +23,21 @@ Here's a screen sh ot it in action:
 
 ```javascript
 // Configuration.
-const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite';  // Location of your hosted EmbeddingGemma TFLite file.
+const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite';  // Location of hosted EmbeddingGemma TFLite file.
 const TOKENIZER_ID = 'onnx-community/embeddinggemma-300m-ONNX';  // Transformers.js Tokenizer to use.
 const SEQ_LENGTH = 1024; // EmbeddingGemma version sequence length.
 // Instantiate VectorSearch Master Class.
 const VECTOR_SEARCH = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+
+// Store text in client side VectorDB
+async function store(someArrayOfStrings) {
+  await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData');
+}
+
+// Store text in client side VectorDB with visual feedback of progress
+async function storeWithProgressUpdate(someArrayOfStrings) {
+  await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData', STATUS_EL);
+}
 ```
 
 ## Performance
