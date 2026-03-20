@@ -19,6 +19,17 @@ Here's a screen sh ot it in action:
 [Reach out to me over on LinkedIn](https://www.linkedin.com/in/webai) or follow for updates on related client side Web AI projects.
 
 
+## Usage
+
+```javascript
+// Configuration.
+const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite';  // Location of your hosted EmbeddingGemma TFLite file.
+const TOKENIZER_ID = 'onnx-community/embeddinggemma-300m-ONNX';  // Transformers.js Tokenizer to use.
+const SEQ_LENGTH = 1024; // EmbeddingGemma version sequence length.
+// Instantiate VectorSearch Master Class.
+const VECTOR_SEARCH = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+```
+
 ## Performance
 
 [I tried to make this as fast as I could](https://www.linkedin.com/posts/webai_rag-litertjs-embeddinggemma-activity-7423026459201523712-IWiD?utm_source=share&utm_medium=member_desktop&rcm=ACoAAE29dSoB2Q5rqrgken9VCQgyG_zQ-gVgvG8). I have tested with 100K vectors on my very old NVIDIA 1070 GPU and it can search those in tens of miliseconds. The largest cost is actually the embedding that takes around 300ms using the EmbeddingGemma model (high quality but large). You may want to swap this out for a leaner embedding model (e.g. all-MiniLM-L6-v2 that Transformers.js also supports) for the ultimate client side speed for embedding - if enough demand I can add support for that too - just open a bug.
