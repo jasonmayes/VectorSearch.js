@@ -33,7 +33,9 @@ let vectorSearch = undefined;
 // Initiation and usage example.
 async function init(statusDomElement) {
   vectorSearch = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
-  await vectorSearch.load('wasm/', statusDomElement); // Location of hosted LiteRT.js Wasm runtime files (see demo).
+  // Specify location of hosted LiteRT.js Wasm runtime files
+  // (demo hosts in /wasm folder but you can use JSDeliver CDN too like this):
+  await vectorSearch.load('https://cdn.jsdelivr.net/npm/@litertjs/core@0.2.1/wasm/', statusDomElement); 
 
   await store(['I love Web AI', 'I like cats', 'Dogs are cool too', 'AI rocks', 'Birds can fly', 'Web AI is client side AI', 'Fish can swim', 'Robots are neat', 'JavaScript rocks too!', 'and so on']);
   await find('Likes animals', 0.25);
