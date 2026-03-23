@@ -71,6 +71,7 @@ async function load() {
   try {
     await updateDbList();
 
+    // Alternatively could load Wasm from JSDeliver CDN URL instead: https://cdn.jsdelivr.net/npm/@litertjs/core@0.2.1/wasm/
     await VECTOR_SEARCH.load('wasm/', STATUS_EL);
 
     STATUS_EL.innerText = 'Ready to store and search';
