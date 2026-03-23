@@ -19,6 +19,8 @@ const RESULTS_TEXT = document.getElementById('results-text');
 const SIMILARITY_CONTAINER = document.getElementById('similarity-container');
 const SIMILARITY_SCORE_EL = document.getElementById('similarity-score');
 const SIMILARITY_LABEL_EL = document.getElementById('similarity-label');
+const API_TRACE_OUTPUT = document.getElementById('api-trace-output');
+const COPY_API_EXAMPLE_BTN = document.getElementById('copy-api-example-btn');
 
 
 // Configuration.
@@ -27,6 +29,137 @@ const TOKENIZER_ID = 'onnx-community/embeddinggemma-300m-ONNX';
 const SEQ_LENGTH = 1024;
 // Instantiate VectorSearch Master Class.
 const VECTOR_SEARCH = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+const TRACE_STATE = {
+  store: '',
+  search: ''
+};
+
+
+function quoteForCode(value) {
+  return JSON.stringify(value);
+}
+
+
+function formatThresholdValue(value) {
+  return Number.isFinite(value) ? parseFloat(value.toFixed(2)).toString() : '0.4';
+}
+
+
+function renderApiTrace() {
+  const sections = [
+    '// Initialization',
+    'const vectorSearch = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);',
+    "await vectorSearch.load('wasm/', statusEl);"
+  ];
+
+  if (TRACE_STATE.store) {
+    sections.push('', '// Latest store call', TRACE_STATE.store);
+  }
+
+  if (TRACE_STATE.search) {
+    sections.push('', '// Latest search call', TRACE_STATE.search);
+  }
+
+  API_TRACE_OUTPUT.textContent = sections.join('\n');
+}
+
+
+function updateStoreTrace(paragraphCount, dbName) {
+  TRACE_STATE.store = `await vectorSearch.storeTexts(paragraphs /* ${paragraphCount} chunks */, ${quoteForCode(dbName)}, statusEl);`;
+  renderApiTrace();
+}
+
+
+function updateSearchTrace(queryText, threshold, selectedDB, includeBestMatch = false) {
+  const lines = [
+    `vectorSearch.setDb(${quoteForCode(selectedDB)});`,
+    `const { embedding, tokens } = await vectorSearch.getEmbedding(${quoteForCode(queryText)});`,
+    'vectorSearch.renderTokens(tokens, queryTokensEl);',
+    'await vectorSearch.renderEmbedding(embedding, queryEmbeddingVizEl, queryEmbeddingTextEl);',
+    `const { results, bestScore, bestIndex } = await vectorSearch.search(embedding, ${formatThresholdValue(threshold)}, ${quoteForCode(selectedDB)});`
+  ];
+
+  if (includeBestMatch) {
+    lines.push('await vectorSearch.renderEmbedding(results[bestIndex].vector, bestMatchEmbeddingVizEl, bestMatchEmbeddingTextEl);');
+  }
+
+  TRACE_STATE.search = lines.join('\n');
+  renderApiTrace();
+}
+
+
+function buildStarterExample() {
+  const dbName = DB_NAME_INPUT.value.trim() || 'MyVectorDB';
+  const query = TARGET_TEXT.value.trim() || 'What should I search for?';
+  const threshold = formatThresholdValue(parseFloat(THRESHOLD_INPUT.value) || 0.4);
+
+  return `import { VectorSearch } from 'https://cdn.jsdelivr.net/gh/jasonmayes/VectorSearch.js@main/VectorSearch-min.js';
+
+const MODEL_URL = ${quoteForCode(MODEL_URL)};
+const TOKENIZER_ID = ${quoteForCode(TOKENIZER_ID)};
+const SEQ_LENGTH = ${SEQ_LENGTH};
+const DB_NAME = ${quoteForCode(dbName)};
+const QUERY = ${quoteForCode(query)};
+const THRESHOLD = ${threshold};
+
+const vectorSearch = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+await vectorSearch.load('wasm/');
+
+const paragraphs = [
+  'First paragraph to index',
+  'Second paragraph to index'
+];
+
+await vectorSearch.storeTexts(paragraphs, DB_NAME);
+
+vectorSearch.setDb(DB_NAME);
+const { embedding, tokens } = await vectorSearch.getEmbedding(QUERY);
+
+// Optional visualizers if you have DOM elements available:
+// vectorSearch.renderTokens(tokens, queryTokensEl);
+// await vectorSearch.renderEmbedding(embedding, queryEmbeddingVizEl, queryEmbeddingTextEl);
+
+const { results, bestScore, bestIndex } = await vectorSearch.search(
+  embedding,
+  THRESHOLD,
+  DB_NAME
+);
+
+console.log({ results, bestScore, bestIndex });`;
+}
+
+
+function setCopyButtonLabel(label) {
+  COPY_API_EXAMPLE_BTN.innerText = label;
+  window.setTimeout(() => {
+    COPY_API_EXAMPLE_BTN.innerText = 'Copy Starter Example';
+  }, 1600);
+}
+
+
+async function copyStarterExample() {
+  const example = buildStarterExample();
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(example);
+    } else {
+      const TEXTAREA = document.createElement('textarea');
+      TEXTAREA.value = example;
+      TEXTAREA.setAttribute('readonly', '');
+      TEXTAREA.style.position = 'absolute';
+      TEXTAREA.style.left = '-9999px';
+      document.body.appendChild(TEXTAREA);
+      TEXTAREA.select();
+      document.execCommand('copy');
+      document.body.removeChild(TEXTAREA);
+    }
+    setCopyButtonLabel('Copied');
+  } catch (e) {
+    console.error('Failed to copy starter example:', e);
+    setCopyButtonLabel('Copy failed');
+  }
+}
 
 
 async function predictBtnClickHandler() {
@@ -56,6 +189,7 @@ async function storeBtnClickHandler() {
   STORE_BTN.disabled = true;
   
   const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+  updateStoreTrace(paragraphs.length, dbName);
   
   await VECTOR_SEARCH.storeTexts(paragraphs, dbName, STATUS_EL);
 
@@ -90,6 +224,8 @@ async function load() {
 
 
 async function predict(queryText, threshold) {
+  updateSearchTrace(queryText, threshold, DB_SELECT.value);
+
   // Visualize embeddings and tokens for the search query text.
   const { embedding: EMBEDDING_DATA, tokens: TOKENS } = await VECTOR_SEARCH.getEmbedding(queryText);
   VECTOR_SEARCH.renderTokens(TOKENS, QUERY_TOKENS_OUTPUT);
@@ -104,6 +240,7 @@ async function predict(queryText, threshold) {
     
     const bestMatchVector = RESULTS[BEST_INDEX].vector;
     if (bestMatchVector) {
+      updateSearchTrace(queryText, threshold, DB_SELECT.value, true);
       await VECTOR_SEARCH.renderEmbedding(bestMatchVector, BEST_MATCH_EMBEDDING_VIZ, BEST_MATCH_EMBEDDING_TEXT);
     }
   } else {
@@ -173,5 +310,6 @@ async function updateDbList() {
   }
 }
 
-
+renderApiTrace();
+COPY_API_EXAMPLE_BTN.addEventListener('click', copyStarterExample);
 load();

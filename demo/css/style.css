@@ -238,6 +238,38 @@ button:disabled {
   margin-bottom: 4px;
 }
 
+.trace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.trace-header .subtitle {
+  margin-bottom: 0;
+}
+
+.secondary-button {
+  padding: 12px 18px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.api-trace-output {
+  margin: 24px 0 0 0;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  color: #d7e6ff;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
 .visual-sub-section {
   margin-top: 24px;
   padding-top: 24px;
@@ -336,4 +368,23 @@ button:disabled {
 
 .hidden {
   display: none;
+}
+
+@media (max-width: 1100px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .side-panel {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .comparison-grid {
+    flex-direction: column;
+  }
+
+  .trace-header {
+    flex-direction: column;
+  }
 }
