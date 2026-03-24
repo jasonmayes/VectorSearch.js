@@ -125,15 +125,15 @@ export class VectorSearch {
       await this.deleteGPUVectorCache();
       this.lastDBName = selectedDB;
       this.allStoredData = await this.vectorStore.getAllVectors();
-
-      if (this.allStoredData.length === 0) {
-        return { results: [], bestScore: 0, bestIndex: 0 };
-      }
       matrixData = this.allStoredData.map(item => item.embedding);
     } else {
       matrixData = this.allStoredData.map(item => item.embedding);
     }
 
+    if (matrixData.length === 0)  {
+      console.warn('No data in chosen vector store. Store some data first before searching');
+      return { results: [], bestScore: 0, bestIndex: 0 };
+    }
     const { values, indices } = await this.cosineSimilarity.cosineSimilarityTFJSGPUMatrix(matrixData, queryVector, maxMatches);
     
     let topMatches = [];
