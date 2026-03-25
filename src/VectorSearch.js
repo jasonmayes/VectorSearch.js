@@ -93,7 +93,7 @@ export class VectorSearch {
     } else {
       // Transformers.js (no tokens returned).
       const { embedding } = await this.embeddingModel.getEmbeddingTransformers(text);
-      return { embedding: result[0] };
+      return { embedding: embedding };
     }
   }
 
