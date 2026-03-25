@@ -15,13 +15,12 @@ import { VisualizeEmbedding } from './VisualizeEmbedding.js';
  */
 export class VectorSearch {
   /**
-   * @param {string} modelUrl URL to the LiteRT model.
-   * @param {string} tokenizerId ID for the Transformers.js tokenizer.
-   * @param {number} seqLength Expected sequence length for the model.
+   * @param {string} modelConfig Config object for VectorSearch setup.
    */
   constructor(modelConfig) {
     this.modelUrl = modelConfig.url;
     this.modelRuntime = modelConfig.runtime;
+    this.litertHostedWasmUrl = modelConfig.litertjsWasmUrl ? modelConfig.litertjsWasmUrl : 'https://cdn.jsdelivr.net/npm/@litertjs/core@0.2.1/wasm/';
     this.tokenizerId = modelConfig.tokenizer;
     this.seqLength = modelConfig.sequenceLength;
 
@@ -51,7 +50,7 @@ export class VectorSearch {
     }
 
     if (this.modelRuntime === 'litertjs') {
-      const LITERTJS_WASM_PATH = 'https://cdn.jsdelivr.net/npm/@litertjs/core@0.2.1/wasm/';
+      const LITERTJS_WASM_PATH = this.litertHostedWasmUrl;
       await LiteRT.loadLiteRt(LITERTJS_WASM_PATH);
       const TF_BACKEND = tf.backend();
       LiteRT.setWebGpuDevice(TF_BACKEND.device);
