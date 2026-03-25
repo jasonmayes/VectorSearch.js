@@ -21,12 +21,20 @@ const SIMILARITY_SCORE_EL = document.getElementById('similarity-score');
 const SIMILARITY_LABEL_EL = document.getElementById('similarity-label');
 
 
-// Configuration.
-const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite';
-const TOKENIZER_ID = 'onnx-community/embeddinggemma-300m-ONNX';
+// Embedding Model Configuration.
+const MODEL_RUNTIME = 'litertjs'; // OR 'transformersjs'
+const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite'; // OR 'Xenova/all-MiniLM-L6-v2' if transformersjs runtime.
 const SEQ_LENGTH = 1024;
+const TOKENIZER = 'onnx-community/embeddinggemma-300m-ONNX';
+const EMBEDDING_MODEL_CONFIG = {
+  runtime: MODEL_RUNTIME,
+  url: MODEL_URL,
+  sequenceLength: SEQ_LENGTH,
+  tokenizer: TOKENIZER
+};
+
 // Instantiate VectorSearch Master Class.
-const VECTOR_SEARCH = new VectorSearch(MODEL_URL, TOKENIZER_ID, SEQ_LENGTH);
+const VECTOR_SEARCH = new VectorSearch(EMBEDDING_MODEL_CONFIG);
 
 
 async function predictBtnClickHandler() {
@@ -71,8 +79,8 @@ async function load() {
   try {
     await updateDbList();
 
-    // Alternatively could load Wasm from JSDeliver CDN URL instead: https://cdn.jsdelivr.net/npm/@litertjs/core@0.2.1/wasm/
-    await VECTOR_SEARCH.load('wasm/', STATUS_EL);
+    // Actually load the runtime and model so ready to use.
+    await VECTOR_SEARCH.load(STATUS_EL);
 
     STATUS_EL.innerText = 'Ready to store and search';
     STORE_BTN.disabled = false;
@@ -93,7 +101,9 @@ async function load() {
 async function predict(queryText, threshold) {
   // Visualize embeddings and tokens for the search query text.
   const { embedding: EMBEDDING_DATA, tokens: TOKENS } = await VECTOR_SEARCH.getEmbedding(queryText);
-  VECTOR_SEARCH.renderTokens(TOKENS, QUERY_TOKENS_OUTPUT);
+  if (TOKENS) {
+    VECTOR_SEARCH.renderTokens(TOKENS, QUERY_TOKENS_OUTPUT);
+  }
   await VECTOR_SEARCH.renderEmbedding(EMBEDDING_DATA, QUERY_EMBEDDING_VIZ, QUERY_EMBEDDING_TEXT);
   
   // Now actually search the vector database.
