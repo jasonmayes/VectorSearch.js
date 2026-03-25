@@ -69,11 +69,14 @@ export class CosineSimilarity {
       // 4. Compute Dot Product
       // We can use matMul by reshaping vector to [D, 1]
       // [N, D] * [D, 1] -> [N, 1]
-      const dotProduct = tf.matMul(
-          normalizedMatrix, 
-          normalizedVector.reshape([-1, 1])
-      );
-
+      try {
+        const dotProduct = tf.matMul(
+            normalizedMatrix, 
+            normalizedVector.reshape([-1, 1])
+        );
+      } catch (error) {
+        console.error('VectorDB you are trying to use was encoded using embedding model that generated different number of dimensions. Please re-encode DB or use correct Embedding Model', error);
+      }
       return dotProduct.squeeze();
     });
     
