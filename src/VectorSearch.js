@@ -191,7 +191,7 @@ export class VectorSearch {
    * @param {string} dbName
    * @param {Function} progressCallback
    */
-  async storeTexts(texts, dbName, statusElement) {
+  async storeTexts(texts, dbName, statusElement, batchSize = 2) {
     this.setDb(dbName);
     let textBatch = [];
     let tensorBatch = [];
@@ -207,7 +207,7 @@ export class VectorSearch {
         tensorBatch.push(embedding);
         textBatch.push(texts[i]);
       
-        if (tensorBatch.length >= 2 || i === texts.length - 1) {
+        if (tensorBatch.length >= batchSize || i === texts.length - 1) {
           const stackedTensors = tf.stack(tensorBatch);
           const allVectors = await stackedTensors.array();
         
