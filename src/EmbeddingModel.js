@@ -1,3 +1,4 @@
+import FileProxyCache from 'https://cdn.jsdelivr.net/gh/jasonmayes/web-ai-model-proxy-cache@main/FileProxyCache.min.js';
 import * as LiteRT from 'https://cdn.jsdelivr.net/npm/@litertjs/core@0.2.1/+esm';
 import * as LiteRTInterop from 'https://cdn.jsdelivr.net/npm/@litertjs/tfjs-interop@1.0.1/+esm';
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
@@ -23,15 +24,16 @@ export class EmbeddingModel {
     // in the main script or within this load method if needed.
     // However, the user asked to keep the logic similar, so we'll just handle 
     // model loading and compilation here.
-
+    let dataUrl = await FileProxyCache.loadFromURL(fileName);
+    
     if (this.runtime === 'litertjs') {
-      this.model = await LiteRT.loadAndCompile(modelUrl, {
+      this.model = await LiteRT.loadAndCompile(dataUrl, {
         accelerator: 'webgpu',
       });
     } else {
       // Transformers.js model.
       // Load the feature-extraction pipeline
-      this.model = await pipeline('feature-extraction', modelUrl);
+      this.model = await pipeline('feature-extraction', dataUrl);
     }
   }
 
