@@ -225,13 +225,22 @@ export class VectorSearch {
         }
       } else {
         // Using Transformers.js model.
-        const { embedding } = await this.embeddingModel.getEmbeddingTransformers(texts[i]);
-        const storagePayload = {
-          embedding: embedding,
-          text: texts[i]
-        };
+        textBatch.push(texts[i]);
 
-        await this.vectorStore.storeBatch([storagePayload]);
+        // Parallelize embedding of texts as such tiny model.
+        if (textBatch.length >= batchSize || i === texts.length - 1) {
+          const EMBEDDINGS = await this.embeddingModel.getEmbeddingTransformers(textBatch);
+
+          for (let e = 0; e < EMBEDDINGS.length; e++) {
+            const storagePayload = {
+              embedding: EMBEDDINGS[e].embedding,
+              text: textBatch[e]
+            };
+
+            await this.vectorStore.storeBatch([storagePayload]);
+            textBatch = [];
+          }
+        }
       }
     }
     await this.deleteGPUVectorCache();
