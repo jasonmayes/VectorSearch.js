@@ -38,23 +38,67 @@ export class EmbeddingModel {
   }
 
   /**
+   * Returns the instruction prefix for the given task type.
+   * @param {string|Object} [taskType='query'] The task type or task options.
+   * @param {string} [title='none'] The document title (only used for 'document' task type).
+   * @return {string} The prefix to prepend.
+   */
+  getTaskPrefix(taskType = 'query', title = 'none') {
+    let task = 'query';
+    let docTitle = title;
+    if (typeof taskType === 'object' && taskType !== null) {
+      task = taskType.type || 'query';
+      docTitle = taskType.title || 'none';
+    } else if (typeof taskType === 'string') {
+      task = taskType;
+    }
+    task = task.toLowerCase();
+
+    if (task === 'document' || task === 'search_document') {
+      return `title: ${docTitle} | text: `;
+    }
+
+    const taskDescriptions = {
+      query: 'search result',
+      retrieval: 'search result',
+      search_query: 'search result',
+      classification: 'classification',
+      clustering: 'clustering',
+      similarity: 'sentence similarity',
+      code_retrieval: 'code retrieval',
+    };
+
+    const desc = taskDescriptions[task] || 'search result';
+    return `task: ${desc} | query: `;
+  }
+
+  /**
    * Generates an embedding for the given tokens.
    * @param {Array<number>} tokens Array of token IDs.
    * @param {number} seqLength Expected sequence length for the model.
+   * @param {string|Object} [taskType='query'] The task type or task options.
+   * @param {Object} [tokenizer=null] Optional tokenizer.
+   * @param {string} [rawText=null] Optional raw text.
    * @return {Promise<{embedding: tf.Tensor, tokens: Array<number>}>} The generated embedding tensor.
    */
-  async getEmbeddingLiteRTJS(tokens, seqLength) {
+  async getEmbeddingLiteRTJS(tokens, seqLength, taskType = 'query', tokenizer = null, rawText = null) {
     if (!this.model) {
       throw new Error('Model not loaded. Call load() first.');
     }
     
     if (this.runtime === 'litertjs') {
-      let inputTensor = tf.tensor1d(tokens, 'int32');
+      let finalTokens = tokens;
+      if (tokenizer && rawText !== null) {
+        const prefix = this.getTaskPrefix(taskType);
+        finalTokens = await tokenizer.encode(prefix + rawText);
+      }
+
+      let inputTensor = tf.tensor1d(finalTokens, 'int32');
     
       // Ensure to fill to expected model token length else trim.
-      if (tokens.length < seqLength) {
-        inputTensor = inputTensor.pad([[0, seqLength - tokens.length]]);
-      } else if (tokens.length > seqLength) {
+      if (finalTokens.length < seqLength) {
+        inputTensor = inputTensor.pad([[0, seqLength - finalTokens.length]]);
+      } else if (finalTokens.length > seqLength) {
         inputTensor = inputTensor.slice([0], [seqLength]);
       }
     
@@ -65,7 +109,7 @@ export class EmbeddingModel {
       EXPANDED_INPUT.dispose();
       return {
         embedding: RESULTS[0], // Returns batch of 1.
-        tokens: tokens
+        tokens: finalTokens
       };
     }
   }
@@ -73,11 +117,19 @@ export class EmbeddingModel {
   /**
    * Generates an embedding for the given tokens.
    * @param {string|Array<string>} textBatch Text or array of text to embed.
+   * @param {string|Object} [taskType='query'] The task type or task options.
    * @return {Promise<{embedding: Array<number>}>} The generated embedding.
    */
-  async getEmbeddingTransformers(textBatch) {
+  async getEmbeddingTransformers(textBatch, taskType = 'query') {
     if (this.runtime === 'transformersjs') {
-      const queryResult = await this.model(textBatch, { pooling: 'mean', normalize: true });
+      const prefix = this.getTaskPrefix(taskType);
+      let formattedBatch;
+      if (Array.isArray(textBatch)) {
+        formattedBatch = textBatch.map(text => prefix + text);
+      } else {
+        formattedBatch = prefix + textBatch;
+      }
+      const queryResult = await this.model(formattedBatch, { pooling: 'mean', normalize: true });
       const queryVector = Array.from(queryResult.data);
       return {
         embedding: queryVector
