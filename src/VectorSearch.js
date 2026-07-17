@@ -80,18 +80,24 @@ export class VectorSearch {
   /**
    * Encodes text and generates an embedding.
    * @param {string} text
+   * @param {string|Object} [taskType='query'] The task type or task options.
    * @return {Promise<{embedding: Array<number>, tokens: Array<number>}>}
    */
-  async getEmbedding(text) {
+  async getEmbedding(text, taskType = 'query') {
     if (this.modelRuntime === 'litertjs') {
-      const tokens = await this.tokenizer.encode(text);
-      const { embedding } = await this.embeddingModel.getEmbeddingLiteRTJS(tokens, this.seqLength);
+      const { embedding, tokens } = await this.embeddingModel.getEmbeddingLiteRTJS(
+        [],
+        this.seqLength,
+        taskType,
+        this.tokenizer,
+        text
+      );
       const result = await embedding.array();
       embedding.dispose();
       return { embedding: result[0], tokens };
     } else {
       // Transformers.js (no tokens returned).
-      const { embedding } = await this.embeddingModel.getEmbeddingTransformers(text);
+      const { embedding } = await this.embeddingModel.getEmbeddingTransformers(text, taskType);
       return { embedding: embedding };
     }
   }
@@ -189,9 +195,11 @@ export class VectorSearch {
    * Embeds and stores multiple texts.
    * @param {Array<string>} texts
    * @param {string} dbName
-   * @param {Function} progressCallback
+   * @param {HTMLElement} statusElement
+   * @param {number} batchSize
+   * @param {string|Object} [taskType='document'] The task type or task options.
    */
-  async storeTexts(texts, dbName, statusElement, batchSize = 2) {
+  async storeTexts(texts, dbName, statusElement, batchSize = 2, taskType = 'document') {
     this.setDb(dbName);
     let textBatch = [];
     let tensorBatch = [];
@@ -202,8 +210,13 @@ export class VectorSearch {
       }
       // TODO: Update batching for LiteRT - currently batches DB sends not model inference batching.
       if (this.modelRuntime === 'litertjs') {
-        const tokens = await this.tokenizer.encode(texts[i]);
-        const { embedding } = await this.embeddingModel.getEmbeddingLiteRTJS(tokens, this.seqLength);
+        const { embedding } = await this.embeddingModel.getEmbeddingLiteRTJS(
+          [],
+          this.seqLength,
+          taskType,
+          this.tokenizer,
+          texts[i]
+        );
         tensorBatch.push(embedding);
         textBatch.push(texts[i]);
       
@@ -230,7 +243,7 @@ export class VectorSearch {
         // Parallelize embedding of texts as such tiny model.
         if (textBatch.length >= batchSize || i === texts.length - 1) {
           // Returns huge 1D array of embeddings.
-          const { embedding: EMBEDDINGS } = await this.embeddingModel.getEmbeddingTransformers(textBatch);
+          const { embedding: EMBEDDINGS } = await this.embeddingModel.getEmbeddingTransformers(textBatch, taskType);
           const EMBEDDING_LENGTH = EMBEDDINGS.length / batchSize;
           for (let e = 0; e < (EMBEDDINGS.length / EMBEDDING_LENGTH); e++) {
             const storagePayload = {
