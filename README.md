@@ -58,8 +58,13 @@ async function store(someArrayOfStrings) {
   // Optionally can specify callback to write status to a HTML DOM element:
   // await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData', STATUS_EL);
   
-  // Finally you can also specify batch size to store array of strings much faster when using all-Mini-L6-v2 model only for now.
+  // You can also specify batch size to store array of strings much faster when using all-Mini-L6-v2 model only for now.
   // await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData', undefined, 100);
+
+  // Finally you can also specify embedding task type if using EmbeddingGemma. Can be one of the following strings:
+  // document, query, retrieval, search_query, classification, clustering, similarity, code_retrieval
+  // Store defaults to 'document' if you do not specify.
+  // await VECTOR_SEARCH.storeTexts(someArrayOfStrings, 'DatabaseNameForThisData', undefined, undefined, 'document');
 }
 
 
