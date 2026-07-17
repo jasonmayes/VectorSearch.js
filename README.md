@@ -70,7 +70,7 @@ async function store(someArrayOfStrings) {
 
 // Search example.
 async function find(queryText, cosineSimilarityThreshold) {
-  const {embedding: EMBEDDING_DATA, tokens: TOKENS} = await VECTOR_SEARCH.getEmbedding(queryText);
+  const {embedding: EMBEDDING_DATA, tokens: TOKENS} = await VECTOR_SEARCH.getEmbedding(queryText, 'query');
 
   /** Optional: Visualize embeddings and tokens for the search query text.
   if (TOKENS) {
