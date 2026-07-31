@@ -156,9 +156,9 @@ For more details [see the model card page on HuggingFace](https://huggingface.co
 
 This is a LiteRT.js Web AI compatible EmbeddingGemma model using the tflite model format.
 
-### all-MiniLM-L6-v2 embedding model
+### all-MiniLM-L6-v2 or Snowflake/snowflake-arctic-embed-s embedding models
 
-If you wish to use the all-MiniLM-L6-v2 embedding model instead for speed you can change the config object to be:
+If you wish to use the all-MiniLM-L6-v2 or Snowflake/snowflake-arctic-embed-s embedding models instead for speed you can change the config object to be one of the following:
 
 ```javascript
 // Embedding Model Configuration.
@@ -177,9 +177,26 @@ const EMBEDDING_MODEL_CONFIG = {
 const VECTOR_SEARCH = new VectorSearch(EMBEDDING_MODEL_CONFIG);
 ```
 
-However please note this model is faster for a few reasons:
+```javascript
+// Embedding Model Configuration.
+const MODEL_RUNTIME = 'transformersjs';
+const MODEL_URL = 'Snowflake/snowflake-arctic-embed-s';
+const SEQ_LENGTH = 512;
+const TOKENIZER = 'onnx-community/embeddinggemma-300m-ONNX';
+const EMBEDDING_MODEL_CONFIG = {
+  runtime: MODEL_RUNTIME,
+  url: MODEL_URL,
+  sequenceLength: SEQ_LENGTH,
+  tokenizer: TOKENIZER
+};
 
-1. The input text to be embedded can only be up to 128 tokens vs EmbeddingGemma's 1024 tokens.
+// Instantiate VectorSearch Master Class.
+const VECTOR_SEARCH = new VectorSearch(EMBEDDING_MODEL_CONFIG);
+```
+
+However please note these models are faster for a few reasons:
+
+1. The input text to be embedded can only be up to 128 or 512 tokens vs EmbeddingGemma's 1024 tokens.
 2. The vector embedding produced has 384 dimensions vs EmbeddingGemma's 786 dimensions.
 
 ### LiteRT.js Wasm files (optional self host)
