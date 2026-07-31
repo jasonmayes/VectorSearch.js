@@ -26,7 +26,7 @@ import { VectorSearch } from 'https://cdn.jsdelivr.net/gh/jasonmayes/VectorSearc
 
 // Embedding Model Configuration.
 const MODEL_RUNTIME = 'litertjs'; // OR 'transformersjs'
-const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite'; // OR 'Xenova/all-MiniLM-L6-v2' if transformersjs runtime.
+const MODEL_URL = 'model/embeddinggemma-300M_seq1024_mixed-precision.tflite'; // OR supported transformersjs embedders e.g. 'Xenova/all-MiniLM-L6-v2' or 'Snowflake/snowflake-arctic-embed-s' as examples if transformersjs runtime above.
 const SEQ_LENGTH = 1024;
 const TOKENIZER = 'onnx-community/embeddinggemma-300m-ONNX';
 const EMBEDDING_MODEL_CONFIG = {
