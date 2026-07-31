@@ -18,22 +18,16 @@ export class EmbeddingModel {
    * @param {string} modelUrl URL to the .tflite model file.
    * @return {Promise<void>}
    */
-  async load(modelUrl) {
-    // LiteRT initialization needs to happen before loading.
-    // In this refactor, we assume LiteRT.loadLiteRt and setWebGpuDevice are handled 
-    // in the main script or within this load method if needed.
-    // However, the user asked to keep the logic similar, so we'll just handle 
-    // model loading and compilation here.
-    let dataUrl = await FileProxyCache.loadFromURL(modelUrl);
-    
+  async load(modelUrl) {   
     if (this.runtime === 'litertjs') {
+      let dataUrl = await FileProxyCache.loadFromURL(modelUrl);
       this.model = await LiteRT.loadAndCompile(dataUrl, {
         accelerator: 'webgpu',
       });
     } else {
       // Transformers.js model.
-      // Load the feature-extraction pipeline
-      this.model = await pipeline('feature-extraction', dataUrl);
+      // Load the feature-extraction pipeline (Transformers.js does its own caching).
+      this.model = await pipeline('feature-extraction', modelUrl);
     }
   }
 
