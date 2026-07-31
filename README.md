@@ -165,12 +165,10 @@ If you wish to use the all-MiniLM-L6-v2 or Snowflake/snowflake-arctic-embed-s em
 const MODEL_RUNTIME = 'transformersjs';
 const MODEL_URL = 'Xenova/all-MiniLM-L6-v2';
 const SEQ_LENGTH = 128;
-const TOKENIZER = 'onnx-community/embeddinggemma-300m-ONNX';
 const EMBEDDING_MODEL_CONFIG = {
   runtime: MODEL_RUNTIME,
   url: MODEL_URL,
-  sequenceLength: SEQ_LENGTH,
-  tokenizer: TOKENIZER
+  sequenceLength: SEQ_LENGTH
 };
 
 // Instantiate VectorSearch Master Class.
@@ -182,19 +180,19 @@ const VECTOR_SEARCH = new VectorSearch(EMBEDDING_MODEL_CONFIG);
 const MODEL_RUNTIME = 'transformersjs';
 const MODEL_URL = 'Snowflake/snowflake-arctic-embed-s';
 const SEQ_LENGTH = 512;
-const TOKENIZER = 'onnx-community/embeddinggemma-300m-ONNX';
 const EMBEDDING_MODEL_CONFIG = {
   runtime: MODEL_RUNTIME,
   url: MODEL_URL,
-  sequenceLength: SEQ_LENGTH,
-  tokenizer: TOKENIZER
+  sequenceLength: SEQ_LENGTH
 };
 
 // Instantiate VectorSearch Master Class.
 const VECTOR_SEARCH = new VectorSearch(EMBEDDING_MODEL_CONFIG);
 ```
 
-However please note these models are faster for a few reasons:
+Note that the tokenizer is not specified for these embedding models as Transformers.js will use its own.
+
+However please note these smaller embedding models are faster for a few reasons:
 
 1. The input text to be embedded can only be up to 128 or 512 tokens vs EmbeddingGemma's 1024 tokens.
 2. The vector embedding produced has 384 dimensions vs EmbeddingGemma's 786 dimensions.
